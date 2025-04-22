@@ -1,0 +1,43 @@
+// Server-side function to get unique names, excluding Nitin and Balraj
+function getNames() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Room_Partner_Mapping");
+  const data = sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getValues(); // Column A, names
+  const flatData = data.flat().filter(name => 
+    name &&
+    name !== "Nitin enjoys a well-deserved solo room—peaceful, comfortable, and perfectly uninterrupted." &&
+    name !== "Balraj is enjoying the solo room life—peace, space, and no need to share the blanket!"
+  );
+  const uniqueNames = [...new Set(flatData)];
+  return uniqueNames;
+}
+
+// Server-side function to get partner and room number details
+function getDetails(name) {
+  if (name === "Nitin" || name === "Balraj") {
+    return {
+      partner: "Not found",
+      room: "Not found"
+    };
+  }
+
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Room_Partner_Mapping");
+  const data = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0].toLowerCase() === name.toLowerCase()) {
+      return {
+        partner: data[i][1] || "Not found",
+        room: data[i][2] || "Not found"
+      };
+    }
+  }
+  return {
+    partner: "Not found",
+    room: "Not found"
+  };
+}
+
+// Web app HTML
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile("Page").setTitle("Room & Partner Info");
+}
