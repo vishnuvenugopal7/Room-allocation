@@ -1,263 +1,114 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <base target="_top">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: #000;
-      height: 100vh;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+<script>
+  // Confetti animation (basic version)
+  function launchConfetti() {
+    for (let i = 0; i < 100; i++) {
+      const confetti = document.createElement("div");
+      confetti.style.position = "fixed";
+      confetti.style.width = "8px";
+      confetti.style.height = "8px";
+      confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 60%)`;
+      confetti.style.top = "-10px";
+      confetti.style.left = Math.random() * 100 + "vw";
+      confetti.style.opacity = Math.random();
+      confetti.style.borderRadius = "50%";
+      confetti.style.zIndex = 1000;
+      confetti.style.animation = `fall ${2 + Math.random() * 3}s linear forwards`;
+      document.body.appendChild(confetti);
+      setTimeout(() => confetti.remove(), 5000);
     }
+  }
 
-    .party-bg {
-      background-image: url('https://i.pinimg.com/originals/da/e3/3e/dae33e905feef02bd2530ab97031092e.gif');
-      background-size: cover;
-      background-position: center;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -2;
-    }
-
-    .glass-container {
-      background: rgba(255, 255, 255, 0.85);
-      border-radius: 24px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
-      backdrop-filter: blur(20px);
-      padding: 20px;
-      width: 100%;
-      max-width: 360px;
-      min-height: 600px;
-      margin: auto;
-      text-align: center;
-      animation: fadeIn 1s ease;
-      position: relative;
-      z-index: 1;
-    }
-
-    .logo {
-      width: 50px;
-      margin-bottom: 15px;
-      animation: bounce 2s infinite;
-    }
-
-    h2 {
-      font-weight: 700;
-      font-size: 32px;
-      color: #1d1d1f;
-      margin-bottom: 30px;
-    }
-
-    #welcomeMsg {
-      font-size: 20px;
-      color: #6e6e73;
-      margin-bottom: 20px;
-      display: none;
-    }
-
-    select {
-      width: 100%;
-      padding: 14px;
-      font-size: 20px;
-      border: 1px solid #ccc;
-      border-radius: 12px;
-      margin-bottom: 20px;
-      background-color: #ffffff;
-      appearance: none;
-      transition: border-color 0.3s ease;
-    }
-
-    select:focus {
-      border-color: #e91e63;
-      outline: none;
-    }
-
-    button {
-      background-color: #e91e63;
-      color: white;
-      border: none;
-      padding: 18px 24px;
-      font-size: 20px;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #c2185b;
+  // Fall animation
+  const style = document.createElement('style');
+  style.innerHTML = `
+    @keyframes fall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
     }
 
     #resultModal {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 90%;
-      max-width: 400px;
-      background-color: #ffffff;
-      border-left: 4px solid #e91e63;
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-      z-index: 999;
-      text-align: center;
-      color: #fff;
-      background: linear-gradient(135deg, #e91e63, #ff4081);
-      font-size: 24px;
-      display: none;
+      opacity: 0;
+      pointer-events: none;
     }
 
     #resultModal.show {
-      display: block;
+      opacity: 1;
+      pointer-events: auto;
+      transition: opacity 0.5s ease-in-out;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Parallax effect
+  document.addEventListener('mousemove', (e) => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 10;
+    const y = (e.clientY / window.innerHeight - 0.5) * 10;
+    document.querySelector(".party-bg").style.backgroundPosition = `${50 + x}% ${50 + y}%`;
+  });
+
+  // Load names (excluding Nitin and Balraj)
+  window.onload = function () {
+    google.script.run.withSuccessHandler(function (names) {
+      const dropdown = document.getElementById("nameDropdown");
+      names = names.filter(name => name !== "Nitin" && name !== "Balraj");
+      names.forEach(name => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        dropdown.appendChild(option);
+      });
+    }).getNames();
+  };
+
+  function showWelcome() {
+    const name = document.getElementById("nameDropdown").value;
+    const welcome = document.getElementById("welcomeMsg");
+    if (name) {
+      welcome.style.display = "block";
+      welcome.textContent = `🥳 Hi ${name}, get ready to party! Tap the button below!`;
+    } else {
+      welcome.style.display = "none";
+    }
+  }
+
+  function fetchDetails() {
+    const name = document.getElementById("nameDropdown").value;
+    const modal = document.getElementById("resultModal");
+
+    if (!name) {
+      alert("Please select your name first.");
+      return;
     }
 
-    #resultModal strong {
-      font-size: 28px;
-      color: #fff;
-    }
+    google.script.run.withSuccessHandler(function (data) {
+      // Play notification sound
+      document.getElementById("notifySound").play();
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+      // Mobile vibration
+      if (navigator.vibrate) navigator.vibrate(100);
 
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-8px); }
-    }
-
-    @media(max-width: 360px) {
-      .glass-container {
-        padding: 15px;
-      }
-
-      h2 {
-        font-size: 26px;
-      }
-
-      button {
-        font-size: 16px;
-        padding: 16px 20px;
-      }
-
-      #resultModal {
-        max-width: 95%;
-        font-size: 20px;
-        padding: 20px;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="party-bg"></div>
-
-  <div class="glass-container">
-    <img src="https://cdn-icons-png.flaticon.com/512/168/168882.png" alt="Party Logo" class="logo">
-    <h2>Let's find your Partner In Crime 🎈</h2>
-
-    <div id="welcomeMsg">Welcome! Please select your name below 👇</div>
-
-    <select id="nameDropdown" onchange="showWelcome()">
-      <option value="">-- Select Your Name --</option>
-    </select>
-
-    <button onclick="fetchDetails()">🎉 Get My Details</button>
-    <audio id="notifySound" src="https://assets.mixkit.co/sfx/preview/mixkit-bell-notification-933.mp3" preload="auto"></audio>
-  </div>
-
-  <div id="resultModal"></div>
-
-  <script>
-    function launchConfetti() {
-      for (let i = 0; i < 100; i++) {
-        const confetti = document.createElement("div");
-        confetti.style.position = "fixed";
-        confetti.style.width = "8px";
-        confetti.style.height = "8px";
-        confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 60%)`;
-        confetti.style.top = "-10px";
-        confetti.style.left = Math.random() * 100 + "vw";
-        confetti.style.opacity = Math.random();
-        confetti.style.borderRadius = "50%";
-        confetti.style.zIndex = 1000;
-        confetti.style.animation = `fall ${2 + Math.random() * 3}s linear forwards`;
-        document.body.appendChild(confetti);
-
-        setTimeout(() => confetti.remove(), 5000);
-      }
-    }
-
-    const style = document.createElement('style');
-    style.innerHTML = `
-      @keyframes fall {
-        to {
-          transform: translateY(100vh) rotate(360deg);
-          opacity: 0;
-        }
-      }
-    `;
-    document.head.appendChild(style);
-
-    document.addEventListener('mousemove', (e) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 10;
-      const y = (e.clientY / window.innerHeight - 0.5) * 10;
-      document.querySelector(".party-bg").style.backgroundPosition = `${50 + x}% ${50 + y}%`;
-    });
-
-    window.onload = function () {
-      google.script.run.withSuccessHandler(function (names) {
-        const dropdown = document.getElementById("nameDropdown");
-        names = names.filter(name => name !== "Nitin" && name !== "Balraj");
-        names.forEach(name => {
-          const option = document.createElement("option");
-          option.value = name;
-          option.textContent = name;
-          dropdown.appendChild(option);
-        });
-      }).getNames();
-    };
-
-    function showWelcome() {
-      const name = document.getElementById("nameDropdown").value;
-      const welcome = document.getElementById("welcomeMsg");
-      if (name) {
-        welcome.style.display = "block";
-        welcome.textContent = `🥳 Hi ${name}, get ready t! Tap the button below!`;
-      } else {
-        welcome.style.display = "none";
-      }
-    }
-
-    function fetchDetails() {
-      const name = document.getElementById("nameDropdown").value;
-      if (!name) {
-        alert("Please select your name first.");
-        return;
-      }
-
-      google.script.run.withSuccessHandler(function (data) {
-        document.getElementById("notifySound").play();
+      // Launch confetti if not already showing
+      if (!modal.classList.contains("show")) {
         launchConfetti();
+      }
 
-        const modal = document.getElementById("resultModal");
-        modal.innerHTML = `
-          <strong>🎉 ${name}</strong><br><br>
-          👫 Partner: <strong>${data.partner}</strong><br>
-          🏠 Room Number: <strong>${data.room}</strong>
-        `;
-        modal.classList.add("show");
+      // Show result
+      modal.innerHTML = `
+        <strong>🎉 ${name}</strong><br><br>
+        🕵️‍♀️ Partner in Crime: <strong>${data.partner}</strong><br><br>
+        🚨 Let the chaos begin!
+      `;
+      modal.classList.add("show");
 
-        setTimeout(() => modal.classList.remove("show"), 10000);
-      }).getDetails(name);
-    }
-  </script>
-</body>
-</html>
+      // Scroll to modal
+      modal.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      // Hide after 10s
+      setTimeout(() => {
+        modal.classList.remove("show");
+      }, 10000);
+    }).getDetails(name);
+  }
+</script>
