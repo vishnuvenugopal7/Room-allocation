@@ -13,7 +13,6 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      background-color: #000;
     }
 
     .party-bg {
@@ -36,7 +35,7 @@
       padding: 20px;
       width: 100%;
       max-width: 360px;
-      height: 800px;
+      min-height: 600px;
       margin: auto;
       text-align: center;
       animation: fadeIn 1s ease;
@@ -52,13 +51,13 @@
 
     h2 {
       font-weight: 700;
-      font-size: 24px;
+      font-size: 32px;
       color: #1d1d1f;
       margin-bottom: 30px;
     }
 
     #welcomeMsg {
-      font-size: 15px;
+      font-size: 20px;
       color: #6e6e73;
       margin-bottom: 20px;
       display: none;
@@ -66,8 +65,8 @@
 
     select {
       width: 100%;
-      padding: 12px;
-      font-size: 16px;
+      padding: 14px;
+      font-size: 20px;
       border: 1px solid #ccc;
       border-radius: 12px;
       margin-bottom: 20px;
@@ -85,8 +84,8 @@
       background-color: #e91e63;
       color: white;
       border: none;
-      padding: 14px 20px;
-      font-size: 16px;
+      padding: 18px 24px;
+      font-size: 20px;
       border-radius: 12px;
       cursor: pointer;
       transition: all 0.3s ease;
@@ -97,8 +96,8 @@
     }
 
     #resultModal {
-      position: fixed;
-      top: 30px;
+      position: absolute;
+      bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
       width: 90%;
@@ -110,18 +109,18 @@
       box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
       z-index: 999;
       text-align: center;
-      transition: all 0.5s ease-in-out;
       color: #fff;
       background: linear-gradient(135deg, #e91e63, #ff4081);
-      font-size: 18px;
+      font-size: 24px;
+      display: none;
     }
 
     #resultModal.show {
-      top: 30px;
+      display: block;
     }
 
     #resultModal strong {
-      font-size: 22px;
+      font-size: 28px;
       color: #fff;
     }
 
@@ -141,18 +140,17 @@
       }
 
       h2 {
-        font-size: 20px;
+        font-size: 26px;
       }
 
       button {
-        font-size: 14px;
-        padding: 12px 16px;
+        font-size: 16px;
+        padding: 16px 20px;
       }
 
       #resultModal {
-        width: 100%;
-        max-width: 350px;
-        font-size: 16px;
+        max-width: 95%;
+        font-size: 20px;
         padding: 20px;
       }
     }
@@ -163,7 +161,7 @@
 
   <div class="glass-container">
     <img src="https://cdn-icons-png.flaticon.com/512/168/168882.png" alt="Party Logo" class="logo">
-    <h2>Let's find your Partner In crime 🎈</h2>
+    <h2>Let's find your Partner In Crime 🎈</h2>
 
     <div id="welcomeMsg">Welcome! Please select your name below 👇</div>
 
@@ -178,51 +176,6 @@
   <div id="resultModal"></div>
 
   <script>
-    const mockNames = ["Aryan", "Isha", "Karan", "Rhea", "Simran", "Aman", "Sana", "Vichu", "Avi"];
-    const partnerMap = {
-      "Aryan": "Rhea", "Isha": "Aman", "Karan": "Simran", "Rhea": "Aryan",
-      "Simran": "Karan", "Aman": "Isha", "Sana": "Avi", "Vichu": "Mystery Guest 😉", "Avi": "Sana"
-    };
-
-    window.onload = function () {
-      const dropdown = document.getElementById("nameDropdown");
-      const filteredNames = mockNames.filter(name => name !== "Nitin" && name !== "Balraj");
-      filteredNames.forEach(name => {
-        const option = document.createElement("option");
-        option.value = name;
-        option.textContent = name;
-        dropdown.appendChild(option);
-      });
-    };
-
-    function showWelcome() {
-      const name = document.getElementById("nameDropdown").value;
-      const welcome = document.getElementById("welcomeMsg");
-      if (name) {
-        welcome.style.display = "block";
-        welcome.textContent = `🥳 Hi ${name}, get ready to party! Tap the button below!`;
-      } else {
-        welcome.style.display = "none";
-      }
-    }
-
-    function fetchDetails() {
-      const name = document.getElementById("nameDropdown").value;
-      if (!name) {
-        alert("Please select your name first.");
-        return;
-      }
-
-      document.getElementById("notifySound").play();
-      launchConfetti();
-
-      const modal = document.getElementById("resultModal");
-      modal.innerHTML = `<strong>🎉 ${name}</strong><br><br> 👫 Partner: <strong>${partnerMap[name] || "No Match Found"}</strong>`;
-      modal.classList.add("show");
-
-      setTimeout(() => modal.classList.remove("show"), 10000);
-    }
-
     function launchConfetti() {
       for (let i = 0; i < 100; i++) {
         const confetti = document.createElement("div");
@@ -237,13 +190,74 @@
         confetti.style.zIndex = 1000;
         confetti.style.animation = `fall ${2 + Math.random() * 3}s linear forwards`;
         document.body.appendChild(confetti);
+
         setTimeout(() => confetti.remove(), 5000);
       }
     }
 
     const style = document.createElement('style');
-    style.innerHTML = `@keyframes fall { to { transform: translateY(100vh) rotate(360deg); opacity: 0; } }`;
+    style.innerHTML = `
+      @keyframes fall {
+        to {
+          transform: translateY(100vh) rotate(360deg);
+          opacity: 0;
+        }
+      }
+    `;
     document.head.appendChild(style);
+
+    document.addEventListener('mousemove', (e) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 10;
+      const y = (e.clientY / window.innerHeight - 0.5) * 10;
+      document.querySelector(".party-bg").style.backgroundPosition = `${50 + x}% ${50 + y}%`;
+    });
+
+    window.onload = function () {
+      google.script.run.withSuccessHandler(function (names) {
+        const dropdown = document.getElementById("nameDropdown");
+        names = names.filter(name => name !== "Nitin" && name !== "Balraj");
+        names.forEach(name => {
+          const option = document.createElement("option");
+          option.value = name;
+          option.textContent = name;
+          dropdown.appendChild(option);
+        });
+      }).getNames();
+    };
+
+    function showWelcome() {
+      const name = document.getElementById("nameDropdown").value;
+      const welcome = document.getElementById("welcomeMsg");
+      if (name) {
+        welcome.style.display = "block";
+        welcome.textContent = `🥳 Hi ${name}, get ready t! Tap the button below!`;
+      } else {
+        welcome.style.display = "none";
+      }
+    }
+
+    function fetchDetails() {
+      const name = document.getElementById("nameDropdown").value;
+      if (!name) {
+        alert("Please select your name first.");
+        return;
+      }
+
+      google.script.run.withSuccessHandler(function (data) {
+        document.getElementById("notifySound").play();
+        launchConfetti();
+
+        const modal = document.getElementById("resultModal");
+        modal.innerHTML = `
+          <strong>🎉 ${name}</strong><br><br>
+          👫 Partner: <strong>${data.partner}</strong><br>
+          🏠 Room Number: <strong>${data.room}</strong>
+        `;
+        modal.classList.add("show");
+
+        setTimeout(() => modal.classList.remove("show"), 10000);
+      }).getDetails(name);
+    }
   </script>
 </body>
 </html>
