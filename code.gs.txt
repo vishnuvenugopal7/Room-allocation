@@ -1,4 +1,4 @@
-// Server-side function to get unique names, excluding Nitin and Balraj
+/*// Server-side function to get unique names, excluding Nitin and Balraj
 function getNames() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Room_Partner_Mapping");
   const data = sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getValues(); // Column A, names
@@ -41,3 +41,4 @@ function getDetails(name) {
 function doGet() {
   return HtmlService.createHtmlOutputFromFile("Page").setTitle("Room & Partner Info");
 }
+*/
