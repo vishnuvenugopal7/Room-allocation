@@ -1,205 +1,416 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <base target="_top">
-    <title>Party Partner Picker</title>
-    <style>
-      body {
-        font-family: 'Segoe UI', sans-serif;
-        text-align: center;
-        background: linear-gradient(to right, #f6d365, #fda085);
-        margin: 0;
-        padding: 0;
-        overflow-x: hidden;
-      } 
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #000;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #000;
+    }
 
-      .party-bg {
-        position: relative;
-        height: 100vh;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
-        transition: background-position 0.3s;
+    .party-bg {
+      background-image: url('https://i.pinimg.com/originals/da/e3/3e/dae33e905feef02bd2530ab97031092e.gif');
+      background-size: cover;
+      background-position: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+    }
+
+    .glass-container {
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(20px);
+      padding: 20px;
+      width: 100%;
+      max-width: 360px;
+      height: 800px;
+      margin: auto;
+      text-align: center;
+      animation: fadeIn 1s ease;
+      position: relative;
+      z-index: 1;
+    }
+
+    .logo {
+      width: 50px;
+      margin-bottom: 15px;
+      animation: bounce 2s infinite;
+    }
+
+    h2 {
+      font-weight: 700;
+      font-size: 24px;
+      color: #1d1d1f;
+      margin-bottom: 30px;
+    }
+
+    #welcomeMsg {
+      font-size: 15px;
+      color: #6e6e73;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    select {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      background-color: #ffffff;
+      appearance: none;
+      transition: border-color 0.3s ease;
+    }
+
+    select:focus {
+      border-color: #e91e63;
+      outline: none;
+    }
+
+    button {
+      background-color: #e91e63;
+      color: white;
+      border: none;
+      padding: 14px 20px;
+      font-size: 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #c2185b;
+    }
+
+    #resultModal {
+      position: fixed;
+      top: 250px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 400px;
+      background-color: #ffffff;
+      border-left: 4px solid #e91e63;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+      z-index: 999;
+      text-align: center;
+      transition: all 0.5s ease-in-out;
+      color: #fff;
+      background: linear-gradient(135deg, #e91e63, #ff4081);
+      font-size: 18px;
+    }
+
+    #resultModal.show {
+      top: 30px;
+    }
+
+    #resultModal strong {
+      font-size: 22px;
+      color: #fff;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    @media(max-width: 360px) {
+      .glass-container {
+        padding: 15px;
       }
 
-      h1 {
-        font-size: 2.5rem;
-        color: #fff;
-        margin-bottom: 10px;
-        text-shadow: 1px 1px 3px #000;
-      }
-
-      select, button {
-        font-size: 1rem;
-        padding: 10px 20px;
-        margin: 10px;
-        border: none;
-        border-radius: 8px;
-        outline: none;
-      }
-
-      select {
-        background-color: #ffffffcc;
-        color: #333;
+      h2 {
+        font-size: 20px;
       }
 
       button {
-        background-color: #ff5e62;
-        color: white;
-        cursor: pointer;
-        font-weight: bold;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-        transition: transform 0.2s;
-      }
-
-      button:hover {
-        transform: scale(1.05);
-      }
-
-      #welcomeMsg {
-        margin-top: 20px;
-        font-size: 1.2rem;
-        color: #fff;
-        text-shadow: 1px 1px 2px #000;
+        font-size: 14px;
+        padding: 12px 16px;
       }
 
       #resultModal {
-        position: fixed;
-        bottom: 20%;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #fff;
-        padding: 30px;
-        border-radius: 15px;
-        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
-        z-index: 1000;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.5s ease-in-out;
+        width: 100%;
+        max-width: 350px;
+        font-size: 16px;
+        padding: 20px;
       }
+    }
+  </style>
+</head>
+<body>
+  <div class="party-bg"></div>
 
-      #resultModal.show {
-        opacity: 1;
-        pointer-events: auto;
-      }
+  <div class="glass-container">
+    <img src="https://cdn-icons-png.flaticon.com/512/168/168882.png" alt="Party Logo" class="logo">
+    <h2>Let's find your Partner In crime 🎈</h2>
 
-      audio {
-        display: none;
-      }
+    <div id="welcomeMsg">Welcome! Please select your name below 👇</div>
 
-      @keyframes fall {
-        to {
-          transform: translateY(100vh) rotate(360deg);
-          opacity: 0;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="party-bg">
-      <h1>🎊 Who's Your Party Partner? 🎊</h1>
+    <select id="nameDropdown" onchange="showWelcome()">
+      <option value="">-- Select Your Name --</option>
+    </select>
 
-      <select id="nameDropdown" onchange="showWelcome()">
-        <option value="">-- Select Your Name --</option>
-      </select>
+    <button onclick="fetchDetails()">🎉 Get My Details</button>
+    <audio id="notifySound" src="https://assets.mixkit.co/sfx/preview/mixkit-bell-notification-933.mp3" preload="auto"></audio>
+  </div>
 
-      <br>
-      <button onclick="fetchDetails()">Reveal My Partner</button>
+  <div id="resultModal"></div>
 
-      <p id="welcomeMsg" style="display:none;"></p>
-    </div>
+  <script>
+    const mockNames = ["Vishnu", "Isha", "Karan", "Rhea", "Simran", "Aman", "Sana", "Vichu", "Avi","Nitin Bhan",
+"Balraj Virdi",
+"Sachin Gulia",
+"Rahul Prajapati",
+"Siddhartha Gupta",
+"Iftekhar Warsi",
+"Rahul kumar",
+"Ashish Sharma",
+"Kapil Joshi",
+"Dharmendra Sharma",
+"Navdeep Singh",
+"Dinesh Kumar Pandey",
+"Abhinaba Mukherjee",
+"Sayed Mohd Samasburhan",
+"Vishal Kumar Mahto",
+"Nawab Rajeshwar Kumar",
+"Sangeeta Kharade",
+"Pragati Sharma",
+"Aditi Jain",
+"Sandhya Anand",
+"Noor Sayyed",
+"Raj Kishore Prasad",
+"Ashwani Saraf",
+"Sunil Kumar",
+"Selvam S",
+"Swapnil Thukarul",
+"Karthik M",
+"Rajesh Jasthi",
+"Pradeep P",
+"Sameer Shaikh",
+"Parimal Dhoke",
+"Akshay Kasliwal",
+"S Senthilkumar",
+"Abdul Jabbar Pulpparampan",
+"Manish Agarwal",
+"Soumyadeep Dhar",
+"Sanjay Singh",
+"Abhishek Singh",
+"Praveen Kumar",
+"Zakir Khan",
+"Javed Ali",
+"Varun Bhatt",
+"Kishor D N",
+"Sushil Sahoo",
+"Prashant Verma",
+"Shubham Prajapati",
+"Vivek Kumar",
+"Afsar Ahmed",
+"Jagjit Singh",
+"Sunil Gupta",
+"Shashi Sharma",
+"Desai Parag Girishchandra",
+"Azeem Abbas",
+"Himanshu Sharma",
+"Vishal Saxena",
+"Pranjal Sarmah",
+"Manoranjan Swain",
+"Debajeet Majhi",
+"Rajeshree Kamble",
+"Anshika Bhasin",
+"Tanuja Joshi",
+"Sanjana",
+"Hemant Kumar",
+"Abhishek Kapoor",
+"Ranjit Shinde",
+"Amit Jangid",
+"Shubham Sharma",
+"Sandeep Kamble",
+"Sandeep Kumar Sharma",
+"Mohammed Ahmed Ali",
+"Noufal P M",
+"Shashikant Sharma",
+"Pratik Lad",
+"Rajkumar Bisen",
+"Rajkumar K",
+"Sudhin Dev P",
+"Anurag Bansal",
+"Arun Sharma",
+"Akash Jakkan",
+"Deepak Passi",
+"Rakesh Koul",
+"Umesh Singh",
+"Darji Jitendrakumar Bharatkumar",
+"Surendra P Howal",
+"Ali Ahmed Kittur",
+"Vikas Gupta"];
+    const partnerMap = {
+      "Nitin Bhan" : "Nitin Bhan","Balraj Virdi" : "Balraj Virdi","Sachin Gulia" : "Prashant Verma","Rahul Prajapati" : "Shubham Prajapati",
+"Siddhartha Gupta" : "Vivek Kumar",
+"Iftekhar Warsi" : "Afsar Ahmed",
+"Rahul kumar" : "Jagjit Singh",
+"Ashish Sharma" : "Sunil Gupta",
+"Kapil Joshi" : "Shashi Sharma",
+"Dharmendra Sharma" : "Desai Parag Girishchandra",
+"Navdeep Singh" : "Azeem Abbas",
+"Dinesh Kumar Pandey" : "Himanshu Sharma",
+"Abhinaba Mukherjee" : "Vishal Saxena",
+"Sayed Mohd Samasburhan" : "Pranjal Sarmah",
+"Vishal Kumar Mahto" : "Manoranjan Swain",
+"Nawab Rajeshwar Kumar" : "Debajeet Majhi",
+"Sangeeta Kharade" : "Rajeshree Kamble",
+"Pragati Sharma" : "Anshika Bhasin",
+"Aditi Jain" : "Tanuja Joshi",
+"Sandhya Anand" : "Sanjana",
+"Noor Sayyed" : "Hemant Kumar",
+"Raj Kishore Prasad" : "Abhishek Kapoor",
+"Ashwani Saraf" : "Ranjit Shinde",
+"Sunil Kumar" : "Amit Jangid",
+"Selvam S" : "Shubham Sharma",
+"Swapnil Thukarul" : "Sandeep Kamble",
+"Karthik M" : "Sandeep Kumar Sharma",
+"Rajesh Jasthi" : "Mohammed Ahmed Ali",
+"Pradeep P" : "Noufal P M",
+"Sameer Shaikh" : "Shashikant Sharma",
+"Parimal Dhoke" : "Pratik Lad",
+"Akshay Kasliwal" : "Rajkumar Bisen",
+"S Senthilkumar" : "Rajkumar K",
+"Abdul Jabbar Pulpparampan" : "Sudhin Dev P",
+"Manish Agarwal" : "Anurag Bansal",
+"Soumyadeep Dhar" : "Arun Sharma",
+"Sanjay Singh" : "Akash Jakkan",
+"Abhishek Singh" : "Deepak Passi",
+"Praveen Kumar" : "Rakesh Koul",
+"Zakir Khan" : "Umesh Singh",
+"Javed Ali" : "Darji Jitendrakumar Bharatkumar",
+"Varun Bhatt" : "Surendra P Howal",
+"Kishor D N" : "Ali Ahmed Kittur",
+"Sushil Sahoo" : "Vikas Gupta",
+"Prashant Verma" : "Nitin Bhan",
+"Shubham Prajapati" : "Balraj Virdi",
+"Vivek Kumar" : "Sachin Gulia",
+"Afsar Ahmed" : "Rahul Prajapati",
+"Jagjit Singh" : "Siddhartha Gupta",
+"Sunil Gupta" : "Iftekhar Warsi",
+"Shashi Sharma" : "Rahul kumar",
+"Desai Parag Girishchandra" : "Ashish Sharma",
+"Azeem Abbas" : "Kapil Joshi",
+"Himanshu Sharma" : "Dharmendra Sharma",
+"Vishal Saxena" : "Navdeep Singh",
+"Pranjal Sarmah" : "Dinesh Kumar Pandey",
+"Manoranjan Swain" : "Abhinaba Mukherjee",
+"Debajeet Majhi" : "Sayed Mohd Samasburhan",
+"Rajeshree Kamble" : "Vishal Kumar Mahto",
+"Anshika Bhasin" : "Nawab Rajeshwar Kumar",
+"Tanuja Joshi" : "Sangeeta Kharade",
+"Sanjana" : "Pragati Sharma",
+"Aditi Jain" : "Aditi Jain",
+"Sandhya Anand" : "Sandhya Anand",
+"Ranjit Shinde" : "Noor Sayyed",
+"Amit Jangid" : "Raj Kishore Prasad",
+"Shubham Sharma" : "Ashwani Saraf",
+"Sandeep Kamble" : "Sunil Kumar",
+"Sandeep Kumar Sharma" : "Selvam S",
+"Mohammed Ahmed Ali" : "Swapnil Thukarul",
+"Noufal P M" : "Karthik M",
+"Shashikant Sharma" : "Rajesh Jasthi",
+"Pratik Lad" : "Pradeep P",
+"Rajkumar Bisen" : "Sameer Shaikh",
+"Rajkumar K" : "Parimal Dhoke",
+"Sudhin Dev P" : "Akshay Kasliwal",
+"Anurag Bansal" : "S Senthilkumar",
+"Arun Sharma" : "Abdul Jabbar Pulpparampan",
+"Akash Jakkan" : "Manish Agarwal",
+"Deepak Passi" : "Soumyadeep Dhar",
+"Rakesh Koul" : "Sanjay Singh",
+"Umesh Singh" : "Abhishek Singh",
+"Darji Jitendrakumar Bharatkumar" : "Praveen Kumar",
+"Surendra P Howal" : "Zakir Khan",
+"Ali Ahmed Kittur" : "Javed Ali",
+"Vikas Gupta" : "Varun Bhatt",
+"Kishor D N" : "Ali Ahmed Kittur",
+"Sushil Sahoo" : "Vikas Gupta"};
 
-    <div id="resultModal"></div>
-
-    <audio id="notifySound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg" preload="auto"></audio>
-
-    <script>
-      function launchConfetti() {
-        for (let i = 0; i < 100; i++) {
-          const confetti = document.createElement("div");
-          confetti.style.position = "fixed";
-          confetti.style.width = "8px";
-          confetti.style.height = "8px";
-          confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 60%)`;
-          confetti.style.top = "-10px";
-          confetti.style.left = Math.random() * 100 + "vw";
-          confetti.style.opacity = Math.random();
-          confetti.style.borderRadius = "50%";
-          confetti.style.zIndex = 1000;
-          confetti.style.animation = `fall ${2 + Math.random() * 3}s linear forwards`;
-          document.body.appendChild(confetti);
-          setTimeout(() => confetti.remove(), 5000);
-        }
-      }
-
-      // Load names (excluding Nitin and Balraj)
-      window.onload = function () {
-        google.script.run.withSuccessHandler(function (names) {
-          const dropdown = document.getElementById("nameDropdown");
-          names = names.filter(name => name !== "Nitin" && name !== "Balraj");
-          names.forEach(name => {
-            const option = document.createElement("option");
-            option.value = name;
-            option.textContent = name;
-            dropdown.appendChild(option);
-          });
-        }).getNames();
-      };
-
-      // Show welcome
-      function showWelcome() {
-        const name = document.getElementById("nameDropdown").value;
-        const welcome = document.getElementById("welcomeMsg");
-        if (name) {
-          welcome.style.display = "block";
-          welcome.textContent = `🥳 Hi ${name}, get ready to party! Tap the button below!`;
-        } else {
-          welcome.style.display = "none";
-        }
-      }
-
-      // Fetch & display partner details
-      function fetchDetails() {
-        const name = document.getElementById("nameDropdown").value;
-        const modal = document.getElementById("resultModal");
-
-        if (!name) {
-          alert("Please select your name first.");
-          return;
-        }
-
-        google.script.run.withSuccessHandler(function (data) {
-          document.getElementById("notifySound").play();
-          if (navigator.vibrate) navigator.vibrate(100);
-
-          if (!modal.classList.contains("show")) {
-            launchConfetti();
-          }
-
-          modal.innerHTML = `
-            <strong>🎉 ${name}</strong><br><br>
-            🕵️‍♀️ Partner in Crime: <strong>${data.partner}</strong><br><br>
-            🚨 Let the chaos begin!
-          `;
-          modal.classList.add("show");
-          modal.scrollIntoView({ behavior: "smooth", block: "center" });
-
-          setTimeout(() => {
-            modal.classList.remove("show");
-          }, 10000);
-        }).getDetails(name);
-      }
-
-      // Parallax
-      document.addEventListener('mousemove', (e) => {
-        const x = (e.clientX / window.innerWidth - 0.5) * 10;
-        const y = (e.clientY / window.innerHeight - 0.5) * 10;
-        document.querySelector(".party-bg").style.backgroundPosition = `${50 + x}% ${50 + y}%`;
+    window.onload = function () {
+      const dropdown = document.getElementById("nameDropdown");
+      const filteredNames = mockNames.filter(name => name !== "Nitin" && name !== "Balraj");
+      filteredNames.forEach(name => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        dropdown.appendChild(option);
       });
-    </script>
-  </body>
+    };
+
+    function showWelcome() {
+      const name = document.getElementById("nameDropdown").value;
+      const welcome = document.getElementById("welcomeMsg");
+      if (name) {
+        welcome.style.display = "block";
+        welcome.textContent = `🥳 Hi ${name}, get ready to party! Tap the button below!`;
+      } else {
+        welcome.style.display = "none";
+      }
+    }
+
+    function fetchDetails() {
+      const name = document.getElementById("nameDropdown").value;
+      if (!name) {
+        alert("Please select your name first.");
+        return;
+      }
+
+      document.getElementById("notifySound").play();
+      launchConfetti();
+
+      const modal = document.getElementById("resultModal");
+      modal.innerHTML = `<strong>🎉 ${name}</strong><br><br> 👫 Partner: <strong>${partnerMap[name] || "No Match Found"}</strong>`;
+      modal.classList.add("show");
+
+      setTimeout(() => modal.classList.remove("show"), 10000);
+    }
+
+    function launchConfetti() {
+      for (let i = 0; i < 100; i++) {
+        const confetti = document.createElement("div");
+        confetti.style.position = "fixed";
+        confetti.style.width = "8px";
+        confetti.style.height = "8px";
+        confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 60%)`;
+        confetti.style.top = "-10px";
+        confetti.style.left = Math.random() * 100 + "vw";
+        confetti.style.opacity = Math.random();
+        confetti.style.borderRadius = "50%";
+        confetti.style.zIndex = 1000;
+        confetti.style.animation = `fall ${2 + Math.random() * 3}s linear forwards`;
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 5000);
+      }
+    }
+
+    const style = document.createElement('style');
+    style.innerHTML = `@keyframes fall { to { transform: translateY(100vh) rotate(360deg); opacity: 0; } }`;
+    document.head.appendChild(style);
+  </script>
+</body>
 </html>
