@@ -1,114 +1,205 @@
-<script>
-  // Confetti animation (basic version)
-  function launchConfetti() {
-    for (let i = 0; i < 100; i++) {
-      const confetti = document.createElement("div");
-      confetti.style.position = "fixed";
-      confetti.style.width = "8px";
-      confetti.style.height = "8px";
-      confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 60%)`;
-      confetti.style.top = "-10px";
-      confetti.style.left = Math.random() * 100 + "vw";
-      confetti.style.opacity = Math.random();
-      confetti.style.borderRadius = "50%";
-      confetti.style.zIndex = 1000;
-      confetti.style.animation = `fall ${2 + Math.random() * 3}s linear forwards`;
-      document.body.appendChild(confetti);
-      setTimeout(() => confetti.remove(), 5000);
-    }
-  }
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <title>Party Partner Picker</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', sans-serif;
+        text-align: center;
+        background: linear-gradient(to right, #f6d365, #fda085);
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+      }
 
-  // Fall animation
-  const style = document.createElement('style');
-  style.innerHTML = `
-    @keyframes fall {
-      to {
-        transform: translateY(100vh) rotate(360deg);
+      .party-bg {
+        position: relative;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+        transition: background-position 0.3s;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        color: #fff;
+        margin-bottom: 10px;
+        text-shadow: 1px 1px 3px #000;
+      }
+
+      select, button {
+        font-size: 1rem;
+        padding: 10px 20px;
+        margin: 10px;
+        border: none;
+        border-radius: 8px;
+        outline: none;
+      }
+
+      select {
+        background-color: #ffffffcc;
+        color: #333;
+      }
+
+      button {
+        background-color: #ff5e62;
+        color: white;
+        cursor: pointer;
+        font-weight: bold;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        transition: transform 0.2s;
+      }
+
+      button:hover {
+        transform: scale(1.05);
+      }
+
+      #welcomeMsg {
+        margin-top: 20px;
+        font-size: 1.2rem;
+        color: #fff;
+        text-shadow: 1px 1px 2px #000;
+      }
+
+      #resultModal {
+        position: fixed;
+        bottom: 20%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #fff;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
         opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.5s ease-in-out;
       }
-    }
 
-    #resultModal {
-      opacity: 0;
-      pointer-events: none;
-    }
+      #resultModal.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
 
-    #resultModal.show {
-      opacity: 1;
-      pointer-events: auto;
-      transition: opacity 0.5s ease-in-out;
-    }
-  `;
-  document.head.appendChild(style);
+      audio {
+        display: none;
+      }
 
-  // Parallax effect
-  document.addEventListener('mousemove', (e) => {
-    const x = (e.clientX / window.innerWidth - 0.5) * 10;
-    const y = (e.clientY / window.innerHeight - 0.5) * 10;
-    document.querySelector(".party-bg").style.backgroundPosition = `${50 + x}% ${50 + y}%`;
-  });
+      @keyframes fall {
+        to {
+          transform: translateY(100vh) rotate(360deg);
+          opacity: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="party-bg">
+      <h1>🎊 Who's Your Party Partner? 🎊</h1>
 
-  // Load names (excluding Nitin and Balraj)
-  window.onload = function () {
-    google.script.run.withSuccessHandler(function (names) {
-      const dropdown = document.getElementById("nameDropdown");
-      names = names.filter(name => name !== "Nitin" && name !== "Balraj");
-      names.forEach(name => {
-        const option = document.createElement("option");
-        option.value = name;
-        option.textContent = name;
-        dropdown.appendChild(option);
+      <select id="nameDropdown" onchange="showWelcome()">
+        <option value="">-- Select Your Name --</option>
+      </select>
+
+      <br>
+      <button onclick="fetchDetails()">Reveal My Partner</button>
+
+      <p id="welcomeMsg" style="display:none;"></p>
+    </div>
+
+    <div id="resultModal"></div>
+
+    <audio id="notifySound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg" preload="auto"></audio>
+
+    <script>
+      function launchConfetti() {
+        for (let i = 0; i < 100; i++) {
+          const confetti = document.createElement("div");
+          confetti.style.position = "fixed";
+          confetti.style.width = "8px";
+          confetti.style.height = "8px";
+          confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 60%)`;
+          confetti.style.top = "-10px";
+          confetti.style.left = Math.random() * 100 + "vw";
+          confetti.style.opacity = Math.random();
+          confetti.style.borderRadius = "50%";
+          confetti.style.zIndex = 1000;
+          confetti.style.animation = `fall ${2 + Math.random() * 3}s linear forwards`;
+          document.body.appendChild(confetti);
+          setTimeout(() => confetti.remove(), 5000);
+        }
+      }
+
+      // Load names (excluding Nitin and Balraj)
+      window.onload = function () {
+        google.script.run.withSuccessHandler(function (names) {
+          const dropdown = document.getElementById("nameDropdown");
+          names = names.filter(name => name !== "Nitin" && name !== "Balraj");
+          names.forEach(name => {
+            const option = document.createElement("option");
+            option.value = name;
+            option.textContent = name;
+            dropdown.appendChild(option);
+          });
+        }).getNames();
+      };
+
+      // Show welcome
+      function showWelcome() {
+        const name = document.getElementById("nameDropdown").value;
+        const welcome = document.getElementById("welcomeMsg");
+        if (name) {
+          welcome.style.display = "block";
+          welcome.textContent = `🥳 Hi ${name}, get ready to party! Tap the button below!`;
+        } else {
+          welcome.style.display = "none";
+        }
+      }
+
+      // Fetch & display partner details
+      function fetchDetails() {
+        const name = document.getElementById("nameDropdown").value;
+        const modal = document.getElementById("resultModal");
+
+        if (!name) {
+          alert("Please select your name first.");
+          return;
+        }
+
+        google.script.run.withSuccessHandler(function (data) {
+          document.getElementById("notifySound").play();
+          if (navigator.vibrate) navigator.vibrate(100);
+
+          if (!modal.classList.contains("show")) {
+            launchConfetti();
+          }
+
+          modal.innerHTML = `
+            <strong>🎉 ${name}</strong><br><br>
+            🕵️‍♀️ Partner in Crime: <strong>${data.partner}</strong><br><br>
+            🚨 Let the chaos begin!
+          `;
+          modal.classList.add("show");
+          modal.scrollIntoView({ behavior: "smooth", block: "center" });
+
+          setTimeout(() => {
+            modal.classList.remove("show");
+          }, 10000);
+        }).getDetails(name);
+      }
+
+      // Parallax
+      document.addEventListener('mousemove', (e) => {
+        const x = (e.clientX / window.innerWidth - 0.5) * 10;
+        const y = (e.clientY / window.innerHeight - 0.5) * 10;
+        document.querySelector(".party-bg").style.backgroundPosition = `${50 + x}% ${50 + y}%`;
       });
-    }).getNames();
-  };
-
-  function showWelcome() {
-    const name = document.getElementById("nameDropdown").value;
-    const welcome = document.getElementById("welcomeMsg");
-    if (name) {
-      welcome.style.display = "block";
-      welcome.textContent = `🥳 Hi ${name}, get ready to party! Tap the button below!`;
-    } else {
-      welcome.style.display = "none";
-    }
-  }
-
-  function fetchDetails() {
-    const name = document.getElementById("nameDropdown").value;
-    const modal = document.getElementById("resultModal");
-
-    if (!name) {
-      alert("Please select your name first.");
-      return;
-    }
-
-    google.script.run.withSuccessHandler(function (data) {
-      // Play notification sound
-      document.getElementById("notifySound").play();
-
-      // Mobile vibration
-      if (navigator.vibrate) navigator.vibrate(100);
-
-      // Launch confetti if not already showing
-      if (!modal.classList.contains("show")) {
-        launchConfetti();
-      }
-
-      // Show result
-      modal.innerHTML = `
-        <strong>🎉 ${name}</strong><br><br>
-        🕵️‍♀️ Partner in Crime: <strong>${data.partner}</strong><br><br>
-        🚨 Let the chaos begin!
-      `;
-      modal.classList.add("show");
-
-      // Scroll to modal
-      modal.scrollIntoView({ behavior: "smooth", block: "center" });
-
-      // Hide after 10s
-      setTimeout(() => {
-        modal.classList.remove("show");
-      }, 10000);
-    }).getDetails(name);
-  }
-</script>
+    </script>
+  </body>
+</html>
